@@ -17,6 +17,7 @@
 #define LED_GREEN 30
  
 int baseSpeed = 10; //cm/second
+float turneffort, error, K_p;
 
 // Sets up the IR receiver/decoder object
 const uint8_t IR_DETECTOR_PIN = 1; 
@@ -55,8 +56,15 @@ void beginLineFollowing(void)
 }
 void handleLineFollow(int baseSpeed)
 {
+  int leftLineSensorReading = analogRead(LEFT_LINE_SENSE);
+  int rightLineSensorReading = analogRead(RIGHT_LINE_SENSE);
+  Serial.print(leftLineSensorReading);
+  Serial.print('\t'); //print a TAB character to make the output prettier
+  Serial.println(rightLineSensorReading);
+  delay(100); 
   Serial.println("handleLineFollow()");
-
+  turneffort = error * K_p;
+  chassis.setTwist(baseSpeed, turneffort);
 }
 /*
  * This is the standard setup function that is called when the board is rebooted
@@ -77,6 +85,10 @@ void setup()
   decoder.init(); //Question 2
 
   Serial.println("/setup()");
+
+  
+  pinMode(LEFT_LINE_SENSE, INPUT);
+  pinMode(RIGHT_LINE_SENSE, INPUT);
 }
 
 // A helper command to drive a set distance
