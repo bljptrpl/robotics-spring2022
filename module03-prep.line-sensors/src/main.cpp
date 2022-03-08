@@ -17,7 +17,7 @@
 #define LED_GREEN 30
  
 int baseSpeed = 10; //cm/second
-float turneffort, error, K_p;
+float turneffort, error, K_p = .11;
 
 // Sets up the IR receiver/decoder object
 const uint8_t IR_DETECTOR_PIN = 1; 
@@ -54,7 +54,7 @@ void beginLineFollowing(void)
   setLED(HIGH);
   robotState = ROBOT_LINING;
 }
-void handleLineFollow(int baseSpeed)
+void handleLineFollow()
 {
   int leftLineSensorReading = analogRead(LEFT_LINE_SENSE);
   int rightLineSensorReading = analogRead(RIGHT_LINE_SENSE);
@@ -63,8 +63,18 @@ void handleLineFollow(int baseSpeed)
   Serial.println(rightLineSensorReading);
   delay(100); 
   Serial.println("handleLineFollow()");
+
+  error =  rightLineSensorReading - leftLineSensorReading; 
   turneffort = error * K_p;
   chassis.setTwist(baseSpeed, turneffort);
+  //check intersection
+  if (rightLineSensorReading > 450)
+  {
+    if (leftLineSensorReading > 450)
+    {
+      idle();
+    }
+  }
 }
 /*
  * This is the standard setup function that is called when the board is rebooted
@@ -194,7 +204,7 @@ void loop()
       if(chassis.checkMotionComplete()) handleMotionComplete(); 
       break;
     case ROBOT_LINING:
-      handleLineFollow(baseSpeed);
+      handleLineFollow();
     break;
     default:
       break;
